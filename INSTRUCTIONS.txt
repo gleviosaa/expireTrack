@@ -1,0 +1,92 @@
+================================
+EXPIRETRACK - SIMPLE INSTRUCTIONS
+================================
+
+EVERYTHING IS ALREADY CONFIGURED!
+You only need to:
+
+1. Install Redis
+2. Add Google OAuth credentials
+3. Run the app
+
+
+STEP-BY-STEP:
+-------------
+
+1. INSTALL REDIS:
+
+   macOS:
+   $ brew install redis
+   $ brew services start redis
+
+   Ubuntu/Linux:
+   $ sudo apt-get install redis-server
+   $ sudo systemctl start redis
+
+   Verify:
+   $ redis-cli ping
+   (should show: PONG)
+
+
+2. GET GOOGLE OAUTH:
+
+   a) Go to: https://console.cloud.google.com/
+   b) Create new project: "ExpireTrack"
+   c) Enable "Google+ API"
+   d) Create OAuth 2.0 credentials:
+      - Type: Web application
+      - Origins: http://localhost:5173
+      - Redirect: http://localhost:5000/auth/google/callback
+   e) Copy Client ID and Secret
+   f) Open .env file and paste them:
+      GOOGLE_CLIENT_ID=your-client-id-here
+      GOOGLE_CLIENT_SECRET=your-secret-here
+
+
+3. INSTALL & RUN:
+
+   $ npm install
+   $ npm run check        (optional - verify setup)
+   $ npm run dev:full
+
+
+4. OPEN IN BROWSER:
+
+   http://localhost:5173
+
+
+That's it! Sign in with Google and start using the app!
+
+
+TROUBLESHOOTING:
+---------------
+
+Redis not working?
+→ Make sure it's running: redis-cli ping
+
+Google OAuth error?
+→ Check credentials in .env file
+→ Verify redirect URL matches exactly in Google Console
+
+Port already in use?
+→ Kill the process: lsof -ti:5000 | xargs kill
+
+
+FILES TO READ:
+-------------
+
+START_HERE.md           - Quick start guide
+HARDCODED_SETUP.md      - Detailed setup with screenshots/explanations
+README.md               - Full documentation
+SETUP.md                - Production deployment guide
+
+
+NEED HELP?
+----------
+
+1. Run: npm run check
+   (This will verify your setup)
+
+2. Read: START_HERE.md
+
+3. If still stuck, check the detailed guide: HARDCODED_SETUP.md

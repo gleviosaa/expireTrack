@@ -1,0 +1,127 @@
+╔═══════════════════════════════════════════════════════════╗
+║           EXPIRETRACK - SETUP CHECKLIST                  ║
+╚═══════════════════════════════════════════════════════════╝
+
+BEFORE YOU START:
+-----------------
+
+[✅] All configurations are hardcoded
+[✅] Redis Cloud endpoint is configured
+[✅] .env and .env.local files are created
+[✅] All backend and frontend code is ready
+
+
+YOU ONLY NEED TO ADD:
+---------------------
+
+[ ] 1. Redis Cloud Password
+
+       Location: .env file, line 13
+
+       Find: REDIS_URL=rediss://default:YOUR_REDIS_PASSWORD@...
+
+       Replace: YOUR_REDIS_PASSWORD with your actual password
+
+       Where to get it:
+       → Go to your Redis Cloud dashboard
+       → Copy the password for your database
+
+
+[ ] 2. Google OAuth Client ID
+
+       Location: .env file, line 21
+
+       Replace: YOUR_GOOGLE_CLIENT_ID_HERE
+
+       Where to get it:
+       → https://console.cloud.google.com/
+       → Create OAuth 2.0 credentials
+       → Use redirect: http://localhost:5000/auth/google/callback
+
+
+[ ] 3. Google OAuth Client Secret
+
+       Location: .env file, line 22
+
+       Replace: YOUR_GOOGLE_CLIENT_SECRET_HERE
+
+       Where to get it:
+       → Same place as Client ID
+       → Copy the secret shown after creating credentials
+
+
+THEN RUN:
+---------
+
+[ ] 4. Install Dependencies
+
+       $ npm install
+
+
+[ ] 5. Verify Setup (optional)
+
+       $ npm run check
+
+       This will check if everything is configured correctly
+
+
+[ ] 6. Start the Application
+
+       $ npm run dev:full
+
+       This starts both backend and frontend
+
+
+[ ] 7. Open in Browser
+
+       http://localhost:5173
+
+       Sign in with Google and test!
+
+
+VERIFICATION:
+-------------
+
+If everything works, you should see:
+
+✅ Backend running: http://localhost:5000
+✅ Frontend running: http://localhost:5173
+✅ Google Sign-In button appears
+✅ Can sign in with Google account
+✅ Can add products
+✅ Can upload images
+✅ Data persists in Redis Cloud
+
+
+QUICK REFERENCE:
+----------------
+
+Redis Endpoint (already configured):
+→ redis-10537.c135.eu-central-1-1.ec2.redns.redis-cloud.com:10537
+
+Google OAuth Redirect URI (use this in Google Console):
+→ http://localhost:5000/auth/google/callback
+
+Google OAuth Origin (use this in Google Console):
+→ http://localhost:5173
+
+
+NEED HELP?
+----------
+
+📖 Quick guide:    FINAL_SETUP.md
+📖 Simple steps:   INSTRUCTIONS.txt
+📖 Detailed guide: HARDCODED_SETUP.md
+📖 Full docs:      README.md
+
+
+═══════════════════════════════════════════════════════════
+
+SUMMARY: You need to add 3 values to .env file:
+1. Redis password
+2. Google Client ID
+3. Google Client Secret
+
+Then run: npm install && npm run dev:full
+
+═══════════════════════════════════════════════════════════
