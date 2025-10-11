@@ -69,12 +69,13 @@ router.post('/register', async (req, res) => {
       return res.status(500).json({ error: 'Failed to create user' });
     }
 
-    // Send verification email
+    // Send verification email (optional - won't block registration)
     try {
       await sendVerificationEmail(email, verificationToken, name);
+      console.log(`✅ Verification email sent to ${email}`);
     } catch (emailError) {
-      console.error('Error sending verification email:', emailError);
-      // Continue even if email fails
+      console.error('⚠️  Failed to send verification email, but registration continues:', emailError.message);
+      // Continue even if email fails - user can still use the app
     }
 
     // Generate JWT
