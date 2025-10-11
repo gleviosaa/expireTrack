@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { supabase } from '../config/supabase.js';
 import { authenticateToken } from '../middleware/auth.js';
-import { sendPasswordResetEmail } from '../utils/email.js';
+import { sendPasswordResetEmail, sendVerificationEmail } from '../utils/email.js';
 
 const router = express.Router();
 
@@ -43,6 +43,10 @@ router.post('/register', async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationTokenExpiry = new Date(Date.now() + 86400000); // 24 hours from now
+
     // Create user in Supabase
     const { data: user, error } = await supabase
       .from('users')
@@ -51,6 +55,9 @@ router.post('/register', async (req, res) => {
           email,
           name,
           password: hashedPassword,
+          email_verified: false,
+          verification_token: verificationToken,
+          verification_token_expiry: verificationTokenExpiry.toISOString(),
           created_at: new Date().toISOString()
         }
       ])
@@ -60,6 +67,14 @@ router.post('/register', async (req, res) => {
     if (error) {
       console.error('Supabase insert error:', error);
       return res.status(500).json({ error: 'Failed to create user' });
+    }
+
+    // Send verification email
+    try {
+      await sendVerificationEmail(email, verificationToken, name);
+    } catch (emailError) {
+      console.error('Error sending verification email:', emailError);
+      // Continue even if email fails
     }
 
     // Generate JWT
@@ -74,7 +89,8 @@ router.post('/register', async (req, res) => {
 
     res.status(201).json({
       user: userWithoutPassword,
-      token
+      token,
+      message: 'Registration successful! Please check your email to verify your account.'
     });
   } catch (error) {
     console.error('Registration error:', error);
@@ -272,6 +288,123 @@ router.get('/verify', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Verify error:', error);
     res.status(500).json({ error: 'Failed to verify token' });
+  }
+});
+
+// Verify email with token
+router.post('/verify-email', async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    // Validate input
+    if (!token) {
+      return res.status(400).json({ error: 'Verification token is required' });
+    }
+
+    // Find user with valid verification token
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('verification_token', token)
+      .single();
+
+    if (error || !user) {
+      return res.status(400).json({ error: 'Invalid or expired verification token' });
+    }
+
+    // Check if token is expired
+    const tokenExpiry = new Date(user.verification_token_expiry);
+    if (tokenExpiry < new Date()) {
+      return res.status(400).json({ error: 'Verification token has expired' });
+    }
+
+    // Check if already verified
+    if (user.email_verified) {
+      return res.json({ message: 'Email already verified' });
+    }
+
+    // Update user to mark email as verified
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({
+        email_verified: true,
+        verification_token: null,
+        verification_token_expiry: null
+      })
+      .eq('id', user.id);
+
+    if (updateError) {
+      console.error('Error verifying email:', updateError);
+      return res.status(500).json({ error: 'Failed to verify email' });
+    }
+
+    res.json({
+      message: 'Email verified successfully! You can now use all features.'
+    });
+  } catch (error) {
+    console.error('Email verification error:', error);
+    res.status(500).json({ error: 'Failed to verify email' });
+  }
+});
+
+// Resend verification email
+router.post('/resend-verification', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Validate input
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // Get user from Supabase
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
+
+    if (error || !user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check if already verified
+    if (user.email_verified) {
+      return res.json({ message: 'Email is already verified' });
+    }
+
+    // Generate new verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationTokenExpiry = new Date(Date.now() + 86400000); // 24 hours from now
+
+    // Update verification token
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({
+        verification_token: verificationToken,
+        verification_token_expiry: verificationTokenExpiry.toISOString()
+      })
+      .eq('id', user.id);
+
+    if (updateError) {
+      console.error('Error updating verification token:', updateError);
+      return res.status(500).json({ error: 'Failed to resend verification email' });
+    }
+
+    // Send verification email
+    try {
+      await sendVerificationEmail(email, verificationToken, user.name);
+    } catch (emailError) {
+      console.error('Error sending verification email:', emailError);
+      return res.status(500).json({ error: 'Failed to send verification email' });
+    }
+
+    res.json({
+      message: 'Verification email sent! Please check your inbox.'
+    });
+  } catch (error) {
+    console.error('Resend verification error:', error);
+    res.status(500).json({ error: 'Failed to resend verification email' });
   }
 });
 

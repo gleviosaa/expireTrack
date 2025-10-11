@@ -50,26 +50,26 @@ const LoginRegister = ({ onAuthSuccess, onForgotPassword, darkMode }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4 py-6">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="flex items-center justify-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-green-500 rounded-3xl flex items-center justify-center shadow-lg">
-            <Package className="w-10 h-10 text-white" />
+        <div className="flex items-center justify-center mb-4 sm:mb-6">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-500 to-green-500 rounded-3xl flex items-center justify-center shadow-lg">
+            <Package className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
           </div>
         </div>
 
         {/* Title */}
-        <h1 className="text-4xl font-bold text-center mb-2 text-gray-900 dark:text-white">ExpireTrack</h1>
-        <p className="text-center text-gray-500 dark:text-gray-400 mb-8">Track expiry dates and reduce waste</p>
+        <h1 className="text-3xl sm:text-4xl font-bold text-center mb-1 sm:mb-2 text-gray-900 dark:text-white">ExpireTrack</h1>
+        <p className="text-center text-sm sm:text-base text-gray-500 dark:text-gray-400 mb-4 sm:mb-6">Track expiry dates and reduce waste</p>
 
         {/* Form Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-8">
+        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-5 sm:p-8">
           {/* Toggle Tabs */}
-          <div className="flex gap-2 mb-6 bg-gray-100 dark:bg-gray-700 p-1 rounded-2xl">
+          <div className="flex gap-2 mb-4 sm:mb-6 bg-gray-100 dark:bg-gray-700 p-1 rounded-2xl">
             <button
               onClick={() => { setIsLogin(true); setError(''); }}
-              className={`flex-1 py-3 rounded-xl font-semibold transition ${
+              className={`flex-1 py-2 sm:py-3 rounded-xl font-semibold transition text-sm sm:text-base ${
                 isLogin
                   ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm'
                   : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
@@ -79,7 +79,7 @@ const LoginRegister = ({ onAuthSuccess, onForgotPassword, darkMode }) => {
             </button>
             <button
               onClick={() => { setIsLogin(false); setError(''); }}
-              className={`flex-1 py-3 rounded-xl font-semibold transition ${
+              className={`flex-1 py-2 sm:py-3 rounded-xl font-semibold transition text-sm sm:text-base ${
                 !isLogin
                   ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm'
                   : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
@@ -97,7 +97,7 @@ const LoginRegister = ({ onAuthSuccess, onForgotPassword, darkMode }) => {
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             {/* Name field (only for register) */}
             {!isLogin && (
               <div>
@@ -113,7 +113,7 @@ const LoginRegister = ({ onAuthSuccess, onForgotPassword, darkMode }) => {
                     onChange={handleChange}
                     placeholder="John Doe"
                     required
-                    className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border-0 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full pl-12 pr-4 py-2.5 sm:py-3 bg-gray-50 dark:bg-gray-900 border-0 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   />
                 </div>
               </div>
@@ -133,7 +133,7 @@ const LoginRegister = ({ onAuthSuccess, onForgotPassword, darkMode }) => {
                   onChange={handleChange}
                   placeholder="your.email@example.com"
                   required
-                  className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border-0 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-12 pr-4 py-2.5 sm:py-3 bg-gray-50 dark:bg-gray-900 border-0 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                 />
               </div>
             </div>
@@ -164,7 +164,7 @@ const LoginRegister = ({ onAuthSuccess, onForgotPassword, darkMode }) => {
                   placeholder={isLogin ? 'Enter your password' : 'At least 6 characters'}
                   required
                   minLength={6}
-                  className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border-0 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-12 pr-4 py-2.5 sm:py-3 bg-gray-50 dark:bg-gray-900 border-0 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                 />
               </div>
               {!isLogin && (
@@ -178,7 +178,7 @@ const LoginRegister = ({ onAuthSuccess, onForgotPassword, darkMode }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-4 rounded-xl font-semibold hover:from-blue-600 hover:to-blue-700 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 sm:py-4 rounded-xl font-semibold hover:from-blue-600 hover:to-blue-700 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
             >
               {loading ? (
                 <>
@@ -206,10 +206,10 @@ const LoginRegister = ({ onAuthSuccess, onForgotPassword, darkMode }) => {
         </div>
 
         {/* Features */}
-        <div className="mt-8 text-center space-y-2">
-          <p className="text-sm text-gray-600 dark:text-gray-400">✨ Image upload with camera/gallery</p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">🤝 Shared product images across users</p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">📱 Barcode scanning & expiry tracking</p>
+        <div className="mt-4 sm:mt-6 text-center space-y-1.5 sm:space-y-2">
+          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">✨ Image upload with camera/gallery</p>
+          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">🤝 Shared product images across users</p>
+          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">📱 Barcode scanning & expiry tracking</p>
         </div>
       </div>
     </div>
