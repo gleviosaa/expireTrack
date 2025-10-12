@@ -12,8 +12,13 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
+// In production, allow same-origin requests. In development, allow localhost
+const corsOrigin = process.env.NODE_ENV === 'production'
+  ? true  // Allow same origin in production
+  : (process.env.CLIENT_URL || 'http://localhost:5173');
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: corsOrigin,
   credentials: true
 }));
 
