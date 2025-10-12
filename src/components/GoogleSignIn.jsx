@@ -1,7 +1,8 @@
 import React from 'react';
 
 const GoogleSignIn = () => {
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const API_URL = import.meta.env.VITE_API_URL ||
+    (import.meta.env.MODE === 'production' ? '' : 'http://localhost:5000');
 
   const handleGoogleLogin = () => {
     window.location.href = `${API_URL}/auth/google`;
