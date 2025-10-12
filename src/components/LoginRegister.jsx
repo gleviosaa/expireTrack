@@ -14,8 +14,13 @@ const LoginRegister = ({ onAuthSuccess, onForgotPassword, darkMode }) => {
     name: ''
   });
 
-  const API_URL = import.meta.env.VITE_API_URL ||
-    (import.meta.env.MODE === 'production' ? '' : 'http://localhost:5000');
+  const getApiUrl = () => {
+    if (import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== '') {
+      return import.meta.env.VITE_API_URL;
+    }
+    return window.location.hostname === 'localhost' ? 'http://localhost:5000' : '';
+  };
+  const API_URL = getApiUrl();
 
   const handleSubmit = async (e) => {
     e.preventDefault();

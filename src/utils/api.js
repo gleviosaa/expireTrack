@@ -1,8 +1,16 @@
 import axios from 'axios';
 
 // In production (Vercel), use the same domain. In development, use localhost:5000
-const API_URL = import.meta.env.VITE_API_URL ||
-  (import.meta.env.MODE === 'production' ? '' : 'http://localhost:5000');
+// Check if VITE_API_URL is explicitly set, otherwise detect based on current location
+const getApiUrl = () => {
+  if (import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== '') {
+    return import.meta.env.VITE_API_URL;
+  }
+  // If running on localhost, use localhost:5000, otherwise use same origin
+  return window.location.hostname === 'localhost' ? 'http://localhost:5000' : '';
+};
+
+const API_URL = getApiUrl();
 
 const api = axios.create({
   baseURL: API_URL,

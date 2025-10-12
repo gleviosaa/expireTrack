@@ -9,7 +9,13 @@ const ResetPassword = ({ token, onSuccess, darkMode }) => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
-  const API_URL = import.meta.env.VITE_API_URL ||
+  const getApiUrl = () => {
+    if (import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== '') {
+      return import.meta.env.VITE_API_URL;
+    }
+    return window.location.hostname === 'localhost' ? 'http://localhost:5000' : '';
+  };
+  const API_URL = getApiUrl();
     (import.meta.env.MODE === 'production' ? '' : 'http://localhost:5000');
 
   const handleSubmit = async (e) => {

@@ -1,8 +1,13 @@
 import React from 'react';
 
 const GoogleSignIn = () => {
-  const API_URL = import.meta.env.VITE_API_URL ||
-    (import.meta.env.MODE === 'production' ? '' : 'http://localhost:5000');
+  const getApiUrl = () => {
+    if (import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== '') {
+      return import.meta.env.VITE_API_URL;
+    }
+    return window.location.hostname === 'localhost' ? 'http://localhost:5000' : '';
+  };
+  const API_URL = getApiUrl();
 
   const handleGoogleLogin = () => {
     window.location.href = `${API_URL}/auth/google`;
