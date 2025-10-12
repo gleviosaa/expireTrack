@@ -6,6 +6,7 @@ const LoginRegister = ({ onAuthSuccess, onForgotPassword, darkMode }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const [formData, setFormData] = useState({
     email: '',
@@ -18,25 +19,64 @@ const LoginRegister = ({ onAuthSuccess, onForgotPassword, darkMode }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
 
-    try {
-      const endpoint = isLogin ? '/auth/login' : '/auth/register';
-      const payload = isLogin
-        ? { email: formData.email, password: formData.password }
-        : formData;
+    const endpoint = isLogin ? '/auth/login' : '/auth/register';
+    const payload = isLogin
+      ? { email: formData.email, password: formData.password }
+      : formData;
 
+    try {
       const response = await axios.post(`${API_URL}${endpoint}`, payload);
+
+      // Show success message for registration
+      if (!isLogin) {
+        setSuccess('✅ Registration successful! Redirecting...');
+      }
 
       // Save token and user
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
 
-      // Call success callback
-      onAuthSuccess(response.data.user, response.data.token);
+      // Small delay to show success message
+      setTimeout(() => {
+        onAuthSuccess(response.data.user, response.data.token);
+      }, isLogin ? 0 : 1000);
     } catch (err) {
-      console.error('Auth error:', err);
-      setError(err.response?.data?.error || 'Authentication failed. Please try again.');
+      console.error('Full error object:', err);
+      console.error('Error response:', err.response);
+      console.error('Error data:', err.response?.data);
+      console.error('Error status:', err.response?.status);
+      console.error('API URL used:', `${API_URL}${endpoint}`);
+
+      let errorMessage = 'Authentication failed. Please try again.';
+
+      if (err.response) {
+        // Server responded with an error
+        const status = err.response.status;
+        const serverError = err.response.data?.error;
+
+        if (status === 409 && serverError?.includes('already exists')) {
+          errorMessage = '📧 This email is already registered. Please login instead or use a different email.';
+        } else if (status === 401) {
+          errorMessage = '🔒 Invalid email or password. Please check your credentials and try again.';
+        } else if (status === 400) {
+          errorMessage = serverError || '❌ Please check your input and try again.';
+        } else if (status === 500) {
+          errorMessage = '⚠️ Server error. Please try again in a moment.';
+        } else {
+          errorMessage = serverError || errorMessage;
+        }
+      } else if (err.request) {
+        // Request was made but no response received
+        errorMessage = '🌐 Cannot connect to server. Please check your internet connection.';
+      } else {
+        // Something else happened
+        errorMessage = err.message || errorMessage;
+      }
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -68,7 +108,7 @@ const LoginRegister = ({ onAuthSuccess, onForgotPassword, darkMode }) => {
           {/* Toggle Tabs */}
           <div className="flex gap-2 mb-4 sm:mb-6 bg-gray-100 dark:bg-gray-700 p-1 rounded-2xl">
             <button
-              onClick={() => { setIsLogin(true); setError(''); }}
+              onClick={() => { setIsLogin(true); setError(''); setSuccess(''); }}
               className={`flex-1 py-2 sm:py-3 rounded-xl font-semibold transition text-sm sm:text-base ${
                 isLogin
                   ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm'
@@ -78,7 +118,7 @@ const LoginRegister = ({ onAuthSuccess, onForgotPassword, darkMode }) => {
               Login
             </button>
             <button
-              onClick={() => { setIsLogin(false); setError(''); }}
+              onClick={() => { setIsLogin(false); setError(''); setSuccess(''); }}
               className={`flex-1 py-2 sm:py-3 rounded-xl font-semibold transition text-sm sm:text-base ${
                 !isLogin
                   ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm'
@@ -88,6 +128,13 @@ const LoginRegister = ({ onAuthSuccess, onForgotPassword, darkMode }) => {
               Register
             </button>
           </div>
+
+          {/* Success Message */}
+          {success && (
+            <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl text-sm text-green-600 dark:text-green-400">
+              {success}
+            </div>
+          )}
 
           {/* Error Message */}
           {error && (
@@ -196,7 +243,7 @@ const LoginRegister = ({ onAuthSuccess, onForgotPassword, darkMode }) => {
             <p className="text-xs text-gray-500 dark:text-gray-400">
               {isLogin ? "Don't have an account? " : 'Already have an account? '}
               <button
-                onClick={() => { setIsLogin(!isLogin); setError(''); }}
+                onClick={() => { setIsLogin(!isLogin); setError(''); setSuccess(''); }}
                 className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold"
               >
                 {isLogin ? 'Register' : 'Login'}

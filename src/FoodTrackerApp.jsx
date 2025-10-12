@@ -388,9 +388,18 @@ const FoodTrackerApp = () => {
   }
 
   const handleAuthSuccess = async (user, token) => {
-    setCurrentUser(user);
-    setView('products');
-    await loadProducts();
+    try {
+      console.log('Auth success! User:', user);
+      setCurrentUser(user);
+      setView('products');
+      await loadProducts();
+      console.log('Products loaded successfully');
+    } catch (error) {
+      console.error('Error in handleAuthSuccess:', error);
+      // Still set user and view even if products fail to load
+      setCurrentUser(user);
+      setView('products');
+    }
   };
 
   if (view === 'login') {
