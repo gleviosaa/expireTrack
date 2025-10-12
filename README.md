@@ -155,3 +155,4 @@ Found a bug? Please [create an issue](https://github.com/gleviosaa/expireTrack/i
 ## 👥 Author
 
 Created with ❤️ for reducing food waste
+# ExpireTrack - Vercel Deployment 1760261430
