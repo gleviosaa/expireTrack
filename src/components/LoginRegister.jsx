@@ -43,6 +43,7 @@ const LoginRegister = ({ onAuthSuccess, onForgotPassword, darkMode }) => {
               name: formData.name,
             },
             emailRedirectTo: `${window.location.origin}/`,
+            // This ensures the user gets a session immediately if autoconfirm is enabled
           }
         });
 
@@ -52,11 +53,12 @@ const LoginRegister = ({ onAuthSuccess, onForgotPassword, darkMode }) => {
           if (data.user.identities && data.user.identities.length === 0) {
             setError('📧 This email is already registered. Please login instead.');
           } else if (data.session) {
-            // User is auto-confirmed, log them in
+            // User is auto-confirmed, log them in immediately
             onAuthSuccess(data.user, data.session);
           } else {
-            // Email confirmation required
-            setSuccess('✅ Registration successful! Please check your email to confirm your account before logging in.');
+            // Email confirmation required - user will be auto-logged in when they click the link
+            setSuccess('✅ Registration successful! Please check your email and click the confirmation link. You will be automatically logged in.');
+            setIsLogin(true); // Switch to login view
           }
         }
       }
