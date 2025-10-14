@@ -6,7 +6,8 @@ import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import ImageUpload from './components/ImageUpload';
 import Settings from './components/Settings';
-import { auth, products as productsApi } from './utils/api';
+import { supabase } from './config/supabase';
+import { products as productsApi } from './utils/api';
 
 const FoodTrackerApp = () => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -22,7 +23,7 @@ const FoodTrackerApp = () => {
   const [resetToken, setResetToken] = useState('');
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('darkMode');
-    return saved ? JSON.parse(saved) : false;
+    return saved ? JSON.parse(saved) : true; // Default to dark mode
   });
   const html5QrCodeRef = useRef(null);
 
@@ -50,37 +51,53 @@ const FoodTrackerApp = () => {
     setDarkMode(!darkMode);
   };
 
-  // Check if user is already logged in and parse reset token from URL
+  // Check if user is already logged in and handle Supabase auth state
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-    if (token) {
-      setView('resetPassword');
-      setResetToken(token);
-      setLoading(false);
-    } else {
-      verifyAuth();
-    }
+    // Set up Supabase auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        setCurrentUser({
+          id: session.user.id,
+          email: session.user.email,
+          name: session.user.user_metadata?.name || session.user.email
+        });
+        setView('products');
+        await loadProducts();
+      } else if (event === 'SIGNED_OUT') {
+        setCurrentUser(null);
+        setView('login');
+      } else if (event === 'PASSWORD_RECOVERY') {
+        // User clicked password reset link
+        setView('resetPassword');
+        setResetToken(session.access_token);
+      }
+    });
+
+    // Check for existing session
+    verifyAuth();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const verifyAuth = async () => {
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
 
-    if (token && userStr) {
-      try {
-        await auth.verifyToken();
-        const user = JSON.parse(userStr);
-        setCurrentUser(user);
+      if (session) {
+        setCurrentUser({
+          id: session.user.id,
+          email: session.user.email,
+          name: session.user.user_metadata?.name || session.user.email
+        });
         setView('products');
         await loadProducts();
-      } catch (error) {
-        console.error('Token verification failed:', error);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setCurrentUser(null);
-        setView('login');
       }
+    } catch (error) {
+      console.error('Session verification failed:', error);
+      setCurrentUser(null);
+      setView('login');
     }
     setLoading(false);
   };
@@ -173,7 +190,7 @@ const FoodTrackerApp = () => {
 
   const handleLogout = async () => {
     try {
-      await auth.logout();
+      await supabase.auth.signOut();
       setCurrentUser(null);
       setProducts([]);
       setView('login');

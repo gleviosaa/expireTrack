@@ -1,16 +1,18 @@
 import React from 'react';
+import { supabase } from '../config/supabase';
 
 const GoogleSignIn = () => {
-  const getApiUrl = () => {
-    if (import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== '') {
-      return import.meta.env.VITE_API_URL;
-    }
-    return window.location.hostname === 'localhost' ? 'http://localhost:5000' : '';
-  };
-  const API_URL = getApiUrl();
+  const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/`,
+      }
+    });
 
-  const handleGoogleLogin = () => {
-    window.location.href = `${API_URL}/auth/google`;
+    if (error) {
+      console.error('Google sign-in error:', error);
+    }
   };
 
   return (

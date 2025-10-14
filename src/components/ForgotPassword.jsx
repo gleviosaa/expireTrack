@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Package, Mail, ArrowLeft, Loader, CheckCircle } from 'lucide-react';
-import axios from 'axios';
+import { supabase } from '../config/supabase';
 
 const ForgotPassword = ({ onBack, darkMode }) => {
   const [email, setEmail] = useState('');
@@ -8,25 +8,22 @@ const ForgotPassword = ({ onBack, darkMode }) => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
-  const getApiUrl = () => {
-    if (import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== '') {
-      return import.meta.env.VITE_API_URL;
-    }
-    return window.location.hostname === 'localhost' ? 'http://localhost:5000' : '';
-  };
-  const API_URL = getApiUrl();
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      await axios.post(`${API_URL}/auth/forgot-password`, { email });
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/`,
+      });
+
+      if (error) throw error;
+
       setSuccess(true);
     } catch (err) {
       console.error('Forgot password error:', err);
-      setError(err.response?.data?.error || 'Failed to process request. Please try again.');
+      setError(err.message || 'Failed to process request. Please try again.');
     } finally {
       setLoading(false);
     }

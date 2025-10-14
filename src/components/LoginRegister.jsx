@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Package, Mail, Lock, User, Loader } from 'lucide-react';
-import axios from 'axios';
+import { supabase } from '../config/supabase';
 
 const LoginRegister = ({ onAuthSuccess, onForgotPassword, darkMode }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -14,72 +14,65 @@ const LoginRegister = ({ onAuthSuccess, onForgotPassword, darkMode }) => {
     name: ''
   });
 
-  const getApiUrl = () => {
-    if (import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== '') {
-      return import.meta.env.VITE_API_URL;
-    }
-    return window.location.hostname === 'localhost' ? 'http://localhost:5000' : '';
-  };
-  const API_URL = getApiUrl();
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
     setLoading(true);
 
-    const endpoint = isLogin ? '/auth/login' : '/auth/register';
-    const payload = isLogin
-      ? { email: formData.email, password: formData.password }
-      : formData;
-
     try {
-      const response = await axios.post(`${API_URL}${endpoint}`, payload);
+      if (isLogin) {
+        // Login with Supabase
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
 
-      // Show success message for registration
-      if (!isLogin) {
-        setSuccess('✅ Registration successful! Redirecting...');
+        if (error) throw error;
+
+        if (data.user) {
+          onAuthSuccess(data.user, data.session);
+        }
+      } else {
+        // Register with Supabase
+        const { data, error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: {
+              name: formData.name,
+            },
+            emailRedirectTo: `${window.location.origin}/`,
+          }
+        });
+
+        if (error) throw error;
+
+        if (data.user) {
+          if (data.user.identities && data.user.identities.length === 0) {
+            setError('📧 This email is already registered. Please login instead.');
+          } else {
+            setSuccess('✅ Registration successful! Please check your email to confirm your account.');
+          }
+        }
       }
-
-      // Save token and user
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-
-      // Small delay to show success message
-      setTimeout(() => {
-        onAuthSuccess(response.data.user, response.data.token);
-      }, isLogin ? 0 : 1000);
     } catch (err) {
-      console.error('Full error object:', err);
-      console.error('Error response:', err.response);
-      console.error('Error data:', err.response?.data);
-      console.error('Error status:', err.response?.status);
-      console.error('API URL used:', `${API_URL}${endpoint}`);
+      console.error('Auth error:', err);
 
       let errorMessage = 'Authentication failed. Please try again.';
 
-      if (err.response) {
-        // Server responded with an error
-        const status = err.response.status;
-        const serverError = err.response.data?.error;
-
-        if (status === 409 && serverError?.includes('already exists')) {
-          errorMessage = '📧 This email is already registered. Please login instead or use a different email.';
-        } else if (status === 401) {
+      if (err.message) {
+        if (err.message.includes('Invalid login credentials')) {
           errorMessage = '🔒 Invalid email or password. Please check your credentials and try again.';
-        } else if (status === 400) {
-          errorMessage = serverError || '❌ Please check your input and try again.';
-        } else if (status === 500) {
-          errorMessage = '⚠️ Server error. Please try again in a moment.';
+        } else if (err.message.includes('already registered')) {
+          errorMessage = '📧 This email is already registered. Please login instead.';
+        } else if (err.message.includes('Email not confirmed')) {
+          errorMessage = '📧 Please confirm your email address. Check your inbox for the confirmation link.';
+        } else if (err.message.includes('Invalid email')) {
+          errorMessage = '❌ Please enter a valid email address.';
         } else {
-          errorMessage = serverError || errorMessage;
+          errorMessage = err.message;
         }
-      } else if (err.request) {
-        // Request was made but no response received
-        errorMessage = '🌐 Cannot connect to server. Please check your internet connection.';
-      } else {
-        // Something else happened
-        errorMessage = err.message || errorMessage;
       }
 
       setError(errorMessage);

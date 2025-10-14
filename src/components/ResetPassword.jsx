@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Package, Lock, Loader, CheckCircle } from 'lucide-react';
-import axios from 'axios';
+import { supabase } from '../config/supabase';
 
 const ResetPassword = ({ token, onSuccess, darkMode }) => {
   const [password, setPassword] = useState('');
@@ -8,15 +8,6 @@ const ResetPassword = ({ token, onSuccess, darkMode }) => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
-
-  const getApiUrl = () => {
-    if (import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== '') {
-      return import.meta.env.VITE_API_URL;
-    }
-    return window.location.hostname === 'localhost' ? 'http://localhost:5000' : '';
-  };
-  const API_URL = getApiUrl();
-    (import.meta.env.MODE === 'production' ? '' : 'http://localhost:5000');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,14 +28,16 @@ const ResetPassword = ({ token, onSuccess, darkMode }) => {
     setLoading(true);
 
     try {
-      await axios.post(`${API_URL}/auth/reset-password`, {
-        token,
-        password
+      const { error } = await supabase.auth.updateUser({
+        password: password
       });
+
+      if (error) throw error;
+
       setSuccess(true);
     } catch (err) {
       console.error('Reset password error:', err);
-      setError(err.response?.data?.error || 'Failed to reset password. Please try again.');
+      setError(err.message || 'Failed to reset password. Please try again.');
     } finally {
       setLoading(false);
     }
