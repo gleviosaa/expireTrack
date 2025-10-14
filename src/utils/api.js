@@ -22,9 +22,16 @@ const api = axios.create({
 
 // Add Supabase token to requests
 api.interceptors.request.use(async (config) => {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session?.access_token) {
-    config.headers.Authorization = `Bearer ${session.access_token}`;
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+      config.headers.Authorization = `Bearer ${session.access_token}`;
+      console.log('✅ Added auth token to request');
+    } else {
+      console.warn('⚠️ No session or access token found');
+    }
+  } catch (error) {
+    console.error('❌ Error getting session:', error);
   }
   return config;
 });
