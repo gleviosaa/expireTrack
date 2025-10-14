@@ -51,8 +51,12 @@ const LoginRegister = ({ onAuthSuccess, onForgotPassword, darkMode }) => {
         if (data.user) {
           if (data.user.identities && data.user.identities.length === 0) {
             setError('📧 This email is already registered. Please login instead.');
+          } else if (data.session) {
+            // User is auto-confirmed, log them in
+            onAuthSuccess(data.user, data.session);
           } else {
-            setSuccess('✅ Registration successful! Please check your email to confirm your account.');
+            // Email confirmation required
+            setSuccess('✅ Registration successful! Please check your email to confirm your account before logging in.');
           }
         }
       }
