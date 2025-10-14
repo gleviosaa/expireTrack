@@ -6,15 +6,24 @@ export const authenticateToken = async (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
+      console.log('❌ No token provided');
       return res.status(401).json({ error: 'Access token required' });
     }
 
-    // Verify Supabase JWT token
+    // Verify Supabase JWT token using service role key
     const { data: { user }, error } = await supabase.auth.getUser(token);
 
-    if (error || !user) {
+    if (error) {
+      console.error('❌ Token verification error:', error.message);
       return res.status(403).json({ error: 'Invalid or expired token' });
     }
+
+    if (!user) {
+      console.error('❌ No user found for token');
+      return res.status(403).json({ error: 'Invalid or expired token' });
+    }
+
+    console.log('✅ User authenticated:', user.email);
 
     // Attach user to request
     req.user = {
@@ -25,7 +34,7 @@ export const authenticateToken = async (req, res, next) => {
 
     next();
   } catch (err) {
-    console.error('Auth middleware error:', err);
+    console.error('❌ Auth middleware error:', err);
     return res.status(500).json({ error: 'Authentication failed' });
   }
 };
