@@ -1,4 +1,8 @@
-import { supabase } from '../config/supabase.js';
+import jwt from 'jsonwebtoken';
+
+// Supabase JWT secret is derived from the project's JWT secret
+// For Supabase, we need to verify the token against the JWT secret from the project
+const SUPABASE_JWT_SECRET = process.env.SUPABASE_JWT_SECRET || 'xqtDZBQxLyqfvCfU/4P6T0D+SqazHQSmVUQCBtQpLOCXPIJFu5lYVcXMnLyJiJCuVRCxDJ7hA8u3gFN2fYcVLg==';
 
 export const authenticateToken = async (req, res, next) => {
   try {
@@ -10,31 +14,26 @@ export const authenticateToken = async (req, res, next) => {
       return res.status(401).json({ error: 'Access token required' });
     }
 
-    // Verify Supabase JWT token using service role key
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    // Verify Supabase JWT token
+    const decoded = jwt.verify(token, SUPABASE_JWT_SECRET);
 
-    if (error) {
-      console.error('❌ Token verification error:', error.message);
+    if (!decoded || !decoded.sub) {
+      console.error('❌ Invalid token payload');
       return res.status(403).json({ error: 'Invalid or expired token' });
     }
 
-    if (!user) {
-      console.error('❌ No user found for token');
-      return res.status(403).json({ error: 'Invalid or expired token' });
-    }
-
-    console.log('✅ User authenticated:', user.email);
+    console.log('✅ User authenticated:', decoded.email);
 
     // Attach user to request
     req.user = {
-      id: user.id,
-      email: user.email,
-      name: user.user_metadata?.name || user.email
+      id: decoded.sub,
+      email: decoded.email,
+      name: decoded.user_metadata?.name || decoded.email
     };
 
     next();
   } catch (err) {
-    console.error('❌ Auth middleware error:', err);
-    return res.status(500).json({ error: 'Authentication failed' });
+    console.error('❌ Auth middleware error:', err.message);
+    return res.status(403).json({ error: 'Invalid or expired token' });
   }
 };
