@@ -8,6 +8,7 @@ const router = express.Router();
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
+    console.log('📦 Fetching products for user:', userId);
 
     const { data: products, error } = await supabase
       .from('products')
@@ -16,13 +17,14 @@ router.get('/', authenticateToken, async (req, res) => {
       .order('added_date', { ascending: false });
 
     if (error) {
-      console.error('Supabase error:', error);
+      console.error('❌ Supabase error:', error);
       return res.status(500).json({ error: 'Failed to fetch products' });
     }
 
+    console.log(`✅ Found ${products?.length || 0} products`);
     res.json(products || []);
   } catch (error) {
-    console.error('Error fetching products:', error);
+    console.error('❌ Error fetching products:', error);
     res.status(500).json({ error: 'Failed to fetch products' });
   }
 });
