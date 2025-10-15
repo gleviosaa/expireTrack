@@ -14,6 +14,15 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+// Create Supabase client with auth options for server-side
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+    detectSessionInUrl: false
+  }
+});
 
-console.log('✅ Connected to Supabase');
+console.log('✅ Connected to Supabase with key type:',
+  supabaseKey.includes('service_role') ? 'service_role' :
+  supabaseKey.includes('anon') ? 'anon' : 'unknown');
