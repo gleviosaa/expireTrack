@@ -160,12 +160,53 @@ const FoodTrackerApp = () => {
 
       if (data.status === 1 && data.product) {
         const product = data.product;
+        const imageUrl = sharedImage?.imageUrl || product.image_url || product.image_front_url || '';
+
         return {
+          // Basic Info
           name: product.product_name || product.generic_name || '',
           brand: product.brands || '',
-          imageUrl: sharedImage?.imageUrl || product.image_url || product.image_front_url || '',
+          imageUrl: imageUrl,
           category: product.categories || '',
-          shared: !!sharedImage
+          shared: !!sharedImage,
+
+          // Additional Details
+          quantity: product.quantity || '',
+          packaging: product.packaging || '',
+          origins: product.origins || '',
+          labels: product.labels || '',
+
+          // Nutrition (per 100g)
+          nutrition: {
+            energyKcal: product.nutriments?.['energy-kcal_100g'] || null,
+            fat: product.nutriments?.fat_100g || null,
+            saturatedFat: product.nutriments?.['saturated-fat_100g'] || null,
+            carbohydrates: product.nutriments?.carbohydrates_100g || null,
+            sugars: product.nutriments?.sugars_100g || null,
+            fiber: product.nutriments?.fiber_100g || null,
+            proteins: product.nutriments?.proteins_100g || null,
+            salt: product.nutriments?.salt_100g || null,
+            sodium: product.nutriments?.sodium_100g || null,
+          },
+
+          // Grades & Scores
+          nutriscore: product.nutriscore_grade?.toUpperCase() || null,
+          novaGroup: product.nova_group || null,
+          ecoscore: product.ecoscore_grade?.toUpperCase() || null,
+
+          // Safety & Diet
+          allergens: product.allergens || '',
+          ingredients: product.ingredients_text || '',
+          isVegan: product.ingredients_analysis_tags?.includes('en:vegan') || false,
+          isVegetarian: product.ingredients_analysis_tags?.includes('en:vegetarian') || false,
+          isPalmOilFree: product.ingredients_analysis_tags?.includes('en:palm-oil-free') || false,
+
+          // Images
+          images: {
+            front: product.image_front_url || product.image_url || '',
+            ingredients: product.image_ingredients_url || '',
+            nutrition: product.image_nutrition_url || '',
+          }
         };
       }
 
@@ -253,7 +294,9 @@ const FoodTrackerApp = () => {
         barcode: barcode,
         name: productInfo.name,
         brand: productInfo.brand,
-        imageUrl: productInfo.imageUrl
+        imageUrl: productInfo.imageUrl,
+        // Store all retrieved product info
+        productDetails: productInfo
       });
     } else if (productInfo && productInfo.imageUrl) {
       // Has shared image but no name
@@ -262,7 +305,8 @@ const FoodTrackerApp = () => {
         barcode: barcode,
         name: '',
         brand: '',
-        imageUrl: productInfo.imageUrl
+        imageUrl: productInfo.imageUrl,
+        productDetails: productInfo
       });
     } else {
       setNewProduct({
@@ -477,6 +521,96 @@ const FoodTrackerApp = () => {
                 darkMode={darkMode}
               />
             </div>
+
+            {/* Product Details from Open Food Facts */}
+            {newProduct.productDetails && (
+              <div className="bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 rounded-2xl p-4 space-y-4 animate-fade-in">
+                <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                  <Package className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  Product Information
+                </h3>
+
+                {/* Badges */}
+                <div className="flex flex-wrap gap-2">
+                  {newProduct.productDetails.nutriscore && (
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      newProduct.productDetails.nutriscore === 'A' ? 'bg-green-500 text-white' :
+                      newProduct.productDetails.nutriscore === 'B' ? 'bg-lime-500 text-white' :
+                      newProduct.productDetails.nutriscore === 'C' ? 'bg-yellow-500 text-white' :
+                      newProduct.productDetails.nutriscore === 'D' ? 'bg-orange-500 text-white' :
+                      'bg-red-500 text-white'
+                    }`}>
+                      Nutriscore {newProduct.productDetails.nutriscore}
+                    </span>
+                  )}
+                  {newProduct.productDetails.isVegan && (
+                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                      🌱 Vegan
+                    </span>
+                  )}
+                  {newProduct.productDetails.isVegetarian && !newProduct.productDetails.isVegan && (
+                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                      🥬 Vegetarian
+                    </span>
+                  )}
+                  {newProduct.productDetails.isPalmOilFree && (
+                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                      🌴 Palm Oil Free
+                    </span>
+                  )}
+                </div>
+
+                {/* Nutrition Facts */}
+                {newProduct.productDetails.nutrition && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Nutrition (per 100g)</h4>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      {newProduct.productDetails.nutrition.energyKcal && (
+                        <div className="bg-white dark:bg-gray-700 rounded-lg p-2">
+                          <span className="text-gray-600 dark:text-gray-400">Energy</span>
+                          <p className="font-semibold text-gray-900 dark:text-white">{Math.round(newProduct.productDetails.nutrition.energyKcal)} kcal</p>
+                        </div>
+                      )}
+                      {newProduct.productDetails.nutrition.proteins && (
+                        <div className="bg-white dark:bg-gray-700 rounded-lg p-2">
+                          <span className="text-gray-600 dark:text-gray-400">Proteins</span>
+                          <p className="font-semibold text-gray-900 dark:text-white">{newProduct.productDetails.nutrition.proteins.toFixed(1)}g</p>
+                        </div>
+                      )}
+                      {newProduct.productDetails.nutrition.carbohydrates && (
+                        <div className="bg-white dark:bg-gray-700 rounded-lg p-2">
+                          <span className="text-gray-600 dark:text-gray-400">Carbs</span>
+                          <p className="font-semibold text-gray-900 dark:text-white">{newProduct.productDetails.nutrition.carbohydrates.toFixed(1)}g</p>
+                        </div>
+                      )}
+                      {newProduct.productDetails.nutrition.fat && (
+                        <div className="bg-white dark:bg-gray-700 rounded-lg p-2">
+                          <span className="text-gray-600 dark:text-gray-400">Fat</span>
+                          <p className="font-semibold text-gray-900 dark:text-white">{newProduct.productDetails.nutrition.fat.toFixed(1)}g</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Allergens Warning */}
+                {newProduct.productDetails.allergens && (
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3">
+                    <h4 className="text-sm font-semibold text-red-700 dark:text-red-400 mb-1">⚠️ Allergens</h4>
+                    <p className="text-xs text-red-600 dark:text-red-400">{newProduct.productDetails.allergens}</p>
+                  </div>
+                )}
+
+                {/* Additional Info */}
+                {(newProduct.productDetails.quantity || newProduct.productDetails.origins || newProduct.productDetails.labels) && (
+                  <div className="text-xs space-y-1 text-gray-600 dark:text-gray-400">
+                    {newProduct.productDetails.quantity && <p>📦 Quantity: {newProduct.productDetails.quantity}</p>}
+                    {newProduct.productDetails.origins && <p>🌍 Origin: {newProduct.productDetails.origins}</p>}
+                    {newProduct.productDetails.labels && <p>🏷️ Labels: {newProduct.productDetails.labels}</p>}
+                  </div>
+                )}
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Product Name *</label>
