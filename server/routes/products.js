@@ -21,8 +21,21 @@ router.get('/', authenticateToken, async (req, res) => {
       return res.status(500).json({ error: 'Failed to fetch products' });
     }
 
-    console.log(`✅ Found ${products?.length || 0} products`);
-    res.json(products || []);
+    // Transform snake_case to camelCase for frontend
+    const transformedProducts = (products || []).map(p => ({
+      id: p.id,
+      userId: p.user_id,
+      name: p.name,
+      barcode: p.barcode,
+      expiryDate: p.expiry_date,
+      notes: p.notes,
+      imageUrl: p.image_url,
+      brand: p.brand,
+      addedDate: p.added_date
+    }));
+
+    console.log(`✅ Found ${transformedProducts.length} products`);
+    res.json(transformedProducts);
   } catch (error) {
     console.error('❌ Error fetching products:', error);
     res.status(500).json({ error: 'Failed to fetch products' });
@@ -75,7 +88,20 @@ router.post('/', authenticateToken, async (req, res) => {
         );
     }
 
-    res.status(201).json(product);
+    // Transform snake_case to camelCase for frontend
+    const transformedProduct = {
+      id: product.id,
+      userId: product.user_id,
+      name: product.name,
+      barcode: product.barcode,
+      expiryDate: product.expiry_date,
+      notes: product.notes,
+      imageUrl: product.image_url,
+      brand: product.brand,
+      addedDate: product.added_date
+    };
+
+    res.status(201).json(transformedProduct);
   } catch (error) {
     console.error('Error adding product:', error);
     res.status(500).json({ error: 'Failed to add product' });
