@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, X, Trash2, UtensilsCrossed, Calendar, Target, TrendingUp, Package, Save, ChevronDown } from 'lucide-react';
 import { meals as mealsApi } from '../utils/api';
+import AddMealItemModal from './AddMealItemModal';
+import CreateSavedMealModal from './CreateSavedMealModal';
 
 const MealsView = ({ currentUser }) => {
   const [mealsTab, setMealsTab] = useState('daily'); // 'daily' or 'saved'
@@ -15,6 +17,7 @@ const MealsView = ({ currentUser }) => {
   });
   const [showAddItem, setShowAddItem] = useState(false);
   const [showGoalsModal, setShowGoalsModal] = useState(false);
+  const [showCreateMeal, setShowCreateMeal] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState('breakfast');
   const [loading, setLoading] = useState(true);
 
@@ -131,6 +134,39 @@ const MealsView = ({ currentUser }) => {
       setShowGoalsModal(false);
     } catch (error) {
       console.error('Error updating goals:', error);
+    }
+  };
+
+  const handleAddItemToDailyMenu = async (itemsOrItem) => {
+    try {
+      const items = Array.isArray(itemsOrItem) ? itemsOrItem : [itemsOrItem];
+
+      await mealsApi.addToDailyMenu({
+        menuDate: selectedDate,
+        mealType: selectedMealType,
+        items: items
+      });
+
+      await loadData();
+      setShowAddItem(false);
+    } catch (error) {
+      console.error('Error adding item to daily menu:', error);
+      alert('Failed to add item. Please try again.');
+    }
+  };
+
+  const handleCreateSavedMeal = async (mealData) => {
+    try {
+      await mealsApi.createSavedMeal(mealData);
+      await loadData();
+      setShowCreateMeal(false);
+    } catch (error) {
+      console.error('Error creating saved meal:', error);
+      if (error.response?.status === 400) {
+        alert('Maximum 5 saved meals allowed per user');
+      } else {
+        alert('Failed to create meal. Please try again.');
+      }
     }
   };
 
@@ -307,7 +343,10 @@ const MealsView = ({ currentUser }) => {
               {savedMeals.length}/5 meals saved
             </p>
             {savedMeals.length < 5 && (
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition">
+              <button
+                onClick={() => setShowCreateMeal(true)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition"
+              >
                 <Plus className="w-4 h-4 inline-block mr-1" />
                 Create Meal
               </button>
@@ -378,6 +417,22 @@ const MealsView = ({ currentUser }) => {
           )}
         </div>
       )}
+
+      {/* Add Item Modal */}
+      <AddMealItemModal
+        isOpen={showAddItem}
+        onClose={() => setShowAddItem(false)}
+        onAdd={handleAddItemToDailyMenu}
+        mealType={mealTypes.find(m => m.id === selectedMealType)?.label || selectedMealType}
+        savedMeals={savedMeals}
+      />
+
+      {/* Create Saved Meal Modal */}
+      <CreateSavedMealModal
+        isOpen={showCreateMeal}
+        onClose={() => setShowCreateMeal(false)}
+        onSave={handleCreateSavedMeal}
+      />
 
       {/* Goals Modal */}
       {showGoalsModal && (
