@@ -109,4 +109,50 @@ export const upload = {
   }
 };
 
+// Meals endpoints
+export const meals = {
+  // Saved Meals
+  getSavedMeals: async () => {
+    const response = await api.get('/api/meals/saved');
+    return response.data;
+  },
+
+  createSavedMeal: async (mealData) => {
+    const response = await api.post('/api/meals/saved', mealData);
+    return response.data;
+  },
+
+  deleteSavedMeal: async (mealId) => {
+    const response = await api.delete(`/api/meals/saved/${mealId}`);
+    return response.data;
+  },
+
+  // Daily Menu
+  getDailyMenu: async (date) => {
+    const response = await api.get(`/api/meals/daily/${date}`);
+    return response.data;
+  },
+
+  addToDailyMenu: async (menuData) => {
+    const response = await api.post('/api/meals/daily', menuData);
+    return response.data;
+  },
+
+  deleteDailyMenuItem: async (itemId) => {
+    const response = await api.delete(`/api/meals/daily/item/${itemId}`);
+    return response.data;
+  },
+
+  // Nutrition Goals
+  getNutritionGoals: async () => {
+    const response = await api.get('/api/meals/goals');
+    return response.data;
+  },
+
+  updateNutritionGoals: async (goalsData) => {
+    const response = await api.put('/api/meals/goals', goalsData);
+    return response.data;
+  }
+};
+
 export default api;

@@ -5,6 +5,7 @@ import './config/supabase.js'; // Initialize Supabase connection
 import authRoutes from './routes/auth.js';
 import productRoutes from './routes/products.js';
 import uploadRoutes from './routes/upload.js';
+import mealsRoutes from './routes/meals.js';
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/meals', mealsRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

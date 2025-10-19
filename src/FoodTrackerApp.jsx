@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, User, Package, Bell, Plus, X, Search, Calendar, StickyNote, Trash2, LogOut, Home, Loader, Settings as SettingsIcon } from 'lucide-react';
+import { Camera, User, Package, Bell, Plus, X, Search, Calendar, StickyNote, Trash2, LogOut, Home, Loader, Settings as SettingsIcon, UtensilsCrossed } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 import LoginRegister from './components/LoginRegister';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import ImageUpload from './components/ImageUpload';
 import Settings from './components/Settings';
+import MealsView from './components/MealsView';
 import { supabase } from './config/supabase';
 import { products as productsApi } from './utils/api';
 
@@ -945,6 +946,10 @@ const FoodTrackerApp = () => {
         </div>
       )}
 
+      {activeTab === 'meals' && (
+        <MealsView currentUser={currentUser} />
+      )}
+
       {activeTab === 'notifications' && (
         <div className="max-w-4xl mx-auto p-4">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Notifications</h2>
@@ -1013,8 +1018,20 @@ const FoodTrackerApp = () => {
           </button>
 
           <button
+            onClick={() => setActiveTab('meals')}
+            className={`flex flex-col items-center gap-1 py-2 px-3 rounded-xl transition ${
+              activeTab === 'meals'
+                ? 'text-blue-600'
+                : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
+            }`}
+          >
+            <UtensilsCrossed className="w-6 h-6" />
+            <span className="text-xs font-medium">Meals</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('notifications')}
-            className={`flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition relative ${
+            className={`flex flex-col items-center gap-1 py-2 px-3 rounded-xl transition relative ${
               activeTab === 'notifications'
                 ? 'text-blue-600'
                 : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
@@ -1031,7 +1048,7 @@ const FoodTrackerApp = () => {
 
           <button
             onClick={() => setView('scanner')}
-            className="flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+            className="flex flex-col items-center gap-1 py-2 px-3 rounded-xl transition text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
           >
             <Camera className="w-6 h-6" />
             <span className="text-xs font-medium">Scan</span>
@@ -1039,7 +1056,7 @@ const FoodTrackerApp = () => {
 
           <button
             onClick={() => setActiveTab('settings')}
-            className={`flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition ${
+            className={`flex flex-col items-center gap-1 py-2 px-3 rounded-xl transition ${
               activeTab === 'settings'
                 ? 'text-blue-600'
                 : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
