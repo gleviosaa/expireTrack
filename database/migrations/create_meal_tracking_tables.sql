@@ -79,6 +79,32 @@ ALTER TABLE daily_menu ENABLE ROW LEVEL SECURITY;
 ALTER TABLE daily_menu_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_nutrition_goals ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users can view own saved meals" ON saved_meals;
+DROP POLICY IF EXISTS "Users can create own saved meals" ON saved_meals;
+DROP POLICY IF EXISTS "Users can update own saved meals" ON saved_meals;
+DROP POLICY IF EXISTS "Users can delete own saved meals" ON saved_meals;
+
+DROP POLICY IF EXISTS "Users can view own saved meal items" ON saved_meal_items;
+DROP POLICY IF EXISTS "Users can create own saved meal items" ON saved_meal_items;
+DROP POLICY IF EXISTS "Users can update own saved meal items" ON saved_meal_items;
+DROP POLICY IF EXISTS "Users can delete own saved meal items" ON saved_meal_items;
+
+DROP POLICY IF EXISTS "Users can view own daily menu" ON daily_menu;
+DROP POLICY IF EXISTS "Users can create own daily menu" ON daily_menu;
+DROP POLICY IF EXISTS "Users can update own daily menu" ON daily_menu;
+DROP POLICY IF EXISTS "Users can delete own daily menu" ON daily_menu;
+
+DROP POLICY IF EXISTS "Users can view own daily menu items" ON daily_menu_items;
+DROP POLICY IF EXISTS "Users can create own daily menu items" ON daily_menu_items;
+DROP POLICY IF EXISTS "Users can update own daily menu items" ON daily_menu_items;
+DROP POLICY IF EXISTS "Users can delete own daily menu items" ON daily_menu_items;
+
+DROP POLICY IF EXISTS "Users can view own nutrition goals" ON user_nutrition_goals;
+DROP POLICY IF EXISTS "Users can create own nutrition goals" ON user_nutrition_goals;
+DROP POLICY IF EXISTS "Users can update own nutrition goals" ON user_nutrition_goals;
+DROP POLICY IF EXISTS "Users can delete own nutrition goals" ON user_nutrition_goals;
+
 -- RLS Policies for saved_meals
 CREATE POLICY "Users can view own saved meals" ON saved_meals
   FOR SELECT USING (auth.uid() = user_id);
